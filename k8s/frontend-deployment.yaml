@@ -1,0 +1,56 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: devopshub-client
+  namespace: devopshub
+  labels:
+    app.kubernetes.io/name: devopshub
+    app.kubernetes.io/component: frontend
+    app.kubernetes.io/tier: web
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: devopshub-client
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 1
+      maxUnavailable: 0
+  template:
+    metadata:
+      labels:
+        app: devopshub-client
+        app.kubernetes.io/name: devopshub
+        app.kubernetes.io/component: frontend
+    spec:
+      containers:
+        - name: client
+          image: shivayadav70/devopshub-client:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+              name: http
+          resources:
+            requests:
+              cpu: "50m"
+              memory: "64Mi"
+            limits:
+              cpu: "250m"
+              memory: "256Mi"
+          livenessProbe:
+            httpGet:
+              path: /nginx-health
+              port: 80
+            initialDelaySeconds: 10
+            periodSeconds: 15
+            timeoutSeconds: 3
+            failureThreshold: 3
+          readinessProbe:
+            httpGet:
+              path: /nginx-health
+              port: 80
+            initialDelaySeconds: 5
+            periodSeconds: 10
+            timeoutSeconds: 3
+            failureThreshold: 2

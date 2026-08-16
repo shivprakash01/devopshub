@@ -93,13 +93,44 @@ This repository includes an automated GitHub Actions pipeline located at [`.gith
 
 ---
 
+## ☸️ Kubernetes (K8s) Production Deployment
+
+DevOpsHub includes full Kubernetes manifests located in the [`k8s/`](k8s/) directory, configured with **Kustomize**, **Horizontal Pod Autoscaling (HPA)**, **ConfigMaps**, **Secrets**, and **Ingress**.
+
+### 1. Deploy the Complete Stack (Single Command)
+```bash
+# Using npm shortcut
+npm run k8s:apply
+
+# Or directly with kubectl
+kubectl apply -k ./k8s
+```
+
+### 2. Check Deployment Status
+```bash
+# View all pods, services, deployments, and HPAs in the devopshub namespace
+npm run k8s:status
+
+# Or directly with kubectl
+kubectl get all,hpa,ingress -n devopshub
+```
+
+### 3. Teardown Kubernetes Resources
+```bash
+npm run k8s:delete
+# Or: kubectl delete -k ./k8s
+```
+
+---
+
 ## 🏗️ Architecture & Docker Strategy
 
 | Component | Docker Base Image | Role & Optimizations |
 | :--- | :--- | :--- |
 | **Server** | `node:20-alpine` | Production dependencies, Express API, native health check on `/api/health`. |
 | **Client** | `node:20-alpine` + `nginx:alpine` | Multi-stage build; compiles Vite SPA in Stage 1, serves optimized static assets with Gzip compression and `/api/` reverse proxy in Stage 2. |
-| **Network** | `bridge` | Isolated container network `devopshub-network` connecting client reverse-proxy to server. |
+| **Network** | `bridge` (Docker) / `ClusterIP` (K8s) | Isolated networking connecting client reverse-proxy to backend service `server:5000`. |
+| **Autoscaler**| `autoscaling/v2` (HPA) | Dynamic scaling from 2 to 10 backend pods based on CPU and memory thresholds. |
 
 ---
 
@@ -114,3 +145,7 @@ This repository includes an automated GitHub Actions pipeline located at [`.gith
 | `npm run docker:down` | Stop and teardown containers |
 | `npm run docker:push` | Push images to Docker Hub (`shivayadav70`) |
 | `npm run docker:build:push` | Build and push in a single command |
+| `npm run k8s:apply` | Deploy full stack to Kubernetes cluster via Kustomize |
+| `npm run k8s:status` | Check status of all K8s pods, services & HPAs |
+| `npm run k8s:delete` | Teardown all Kubernetes resources |
+

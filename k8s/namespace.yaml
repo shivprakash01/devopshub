@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: devopshub
+  labels:
+    app.kubernetes.io/name: devopshub
+    app.kubernetes.io/part-of: devopshub-platform

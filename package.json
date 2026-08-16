@@ -14,7 +14,10 @@
     "docker:down": "docker compose down",
     "docker:logs": "docker compose logs -f",
     "docker:push": "docker push shivayadav70/devopshub-server:latest && docker push shivayadav70/devopshub-client:latest",
-    "docker:build:push": "npm run docker:build && npm run docker:push"
+    "docker:build:push": "npm run docker:build && npm run docker:push",
+    "k8s:apply": "kubectl apply -k ./k8s",
+    "k8s:delete": "kubectl delete -k ./k8s",
+    "k8s:status": "kubectl get all,hpa,ingress -n devopshub"
   },
   "keywords": [
     "devops",
