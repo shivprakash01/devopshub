@@ -1,6 +1,11 @@
 # DevOpsHub 🚀
 > **Cloud-Based Project Management & Automated CI/CD Platform**  
-> Built with **React 18, Vite, Node.js, Express, MongoDB, Nginx, Docker & Docker Hub**.
+> Built with **React 18, Vite, Node.js, Express, MongoDB, Nginx, Docker, Kubernetes & Helm**.
+
+[![CI/CD - Test, Build & Publish](https://github.com/shivprakash01/devopshub/actions/workflows/docker-publish.yml/badge.svg)](https://github.com/shivprakash01/devopshub/actions/workflows/docker-publish.yml)
+[![Docker Hub Server](https://img.shields.io/badge/Docker_Hub-devopshub--server-blue?logo=docker)](https://hub.docker.com/r/shivayadav70/devopshub-server)
+[![Docker Hub Client](https://img.shields.io/badge/Docker_Hub-devopshub--client-blue?logo=docker)](https://hub.docker.com/r/shivayadav70/devopshub-client)
+[![Kubernetes](https://img.shields.io/badge/Kubernetes-Ready-326CE5?logo=kubernetes&logoColor=white)](https://kubernetes.io/)
 
 > **GitHub Profile**: [@shivprakash01](https://github.com/shivprakash01)  
 > **GitHub Repository**: [`shivprakash01/devopshub`](https://github.com/shivprakash01/devopshub)
