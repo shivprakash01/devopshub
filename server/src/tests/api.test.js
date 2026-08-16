@@ -1,5 +1,4 @@
-// Automated API Test Suite for DevOpsHub
-process.env.NODE_ENV = 'test';
+import mongoose from 'mongoose';
 import app from '../server.js';
 
 const PORT = 5098;
@@ -14,9 +13,14 @@ async function startTestServer() {
   });
 }
 
-function stopTestServer() {
-  if (serverInstance) {
-    serverInstance.close();
+async function stopTestServer() {
+  try {
+    if (serverInstance) {
+      serverInstance.close();
+    }
+    await mongoose.connection.close();
+  } catch (e) {
+    // ignore
   }
 }
 
@@ -152,11 +156,11 @@ async function runTests() {
     console.log(` 🎉 TEST RESULTS: ${passed} Passed, ${failed} Failed`);
     console.log(`======================================================\n`);
 
-    stopTestServer();
+    await stopTestServer();
     process.exit(0);
   } catch (err) {
     console.error('💥 Test suite execution error:', err.message);
-    stopTestServer();
+    await stopTestServer();
     process.exit(1);
   }
 }
