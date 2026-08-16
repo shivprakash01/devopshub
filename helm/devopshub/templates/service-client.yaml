@@ -1,0 +1,16 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ .Release.Name }}-client
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}-client
+    app.kubernetes.io/instance: {{ .Release.Name }}
+spec:
+  type: {{ .Values.service.client.type }}
+  selector:
+    app: {{ .Release.Name }}-client
+  ports:
+    - protocol: TCP
+      port: {{ .Values.service.client.port }}
+      targetPort: {{ .Values.service.client.port }}
+      name: http

@@ -29,6 +29,21 @@ if (process.env.NODE_ENV !== 'test') {
   app.use(morgan('dev'));
 }
 
+// Request metrics tracker
+let requestCount = 0;
+let requestErrors = 0;
+const startTime = Date.now();
+
+app.use((req, res, next) => {
+  requestCount++;
+  res.on('finish', () => {
+    if (res.statusCode >= 400) {
+      requestErrors++;
+    }
+  });
+  next();
+});
+
 // Health Check Endpoint (Required for DevOps & Cloud Monitoring)
 app.get('/api/health', (req, res) => {
   const dbStatus = mongoose.connection.readyState === 1 ? 'connected' : 'disconnected (in-memory mode)';
@@ -40,6 +55,41 @@ app.get('/api/health', (req, res) => {
     uptime: process.uptime(),
     database: dbStatus,
   });
+});
+
+// Prometheus Metrics Endpoint (text/plain format for Prometheus / Grafana scraping)
+app.get('/api/metrics', (req, res) => {
+  const memory = process.memoryUsage();
+  const uptimeSeconds = (Date.now() - startTime) / 1000;
+  
+  const metrics = [
+    '# HELP devopshub_http_requests_total Total number of HTTP requests handled',
+    '# TYPE devopshub_http_requests_total counter',
+    `devopshub_http_requests_total ${requestCount}`,
+    '',
+    '# HELP devopshub_http_request_errors_total Total number of HTTP error responses (>=400)',
+    '# TYPE devopshub_http_request_errors_total counter',
+    `devopshub_http_request_errors_total ${requestErrors}`,
+    '',
+    '# HELP devopshub_process_uptime_seconds Process uptime in seconds',
+    '# TYPE devopshub_process_uptime_seconds gauge',
+    `devopshub_process_uptime_seconds ${uptimeSeconds.toFixed(2)}`,
+    '',
+    '# HELP devopshub_memory_heap_used_bytes Process heap memory used in bytes',
+    '# TYPE devopshub_memory_heap_used_bytes gauge',
+    `devopshub_memory_heap_used_bytes ${memory.heapUsed}`,
+    '',
+    '# HELP devopshub_memory_rss_bytes Process Resident Set Size in bytes',
+    '# TYPE devopshub_memory_rss_bytes gauge',
+    `devopshub_memory_rss_bytes ${memory.rss}`,
+    '',
+    '# HELP devopshub_database_connection_status MongoDB connection state (1=connected, 0=disconnected)',
+    '# TYPE devopshub_database_connection_status gauge',
+    `devopshub_database_connection_status ${mongoose.connection.readyState === 1 ? 1 : 0}`,
+  ].join('\n');
+
+  res.setHeader('Content-Type', 'text/plain; version=0.0.4; charset=utf-8');
+  res.status(200).send(metrics);
 });
 
 // Mount Routes

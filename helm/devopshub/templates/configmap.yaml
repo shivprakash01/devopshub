@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: {{ .Release.Name }}-config
+  labels:
+    app.kubernetes.io/name: {{ .Chart.Name }}
+    app.kubernetes.io/instance: {{ .Release.Name }}
+data:
+  PORT: {{ .Values.env.PORT | quote }}
+  NODE_ENV: {{ .Values.env.NODE_ENV | quote }}
+  CLIENT_URL: {{ .Values.env.CLIENT_URL | quote }}

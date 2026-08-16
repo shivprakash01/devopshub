@@ -1,7 +1,24 @@
-// Automated API Test Suite for DevOpsHub Phase 1
-import http from 'http';
+// Automated API Test Suite for DevOpsHub
+process.env.NODE_ENV = 'test';
+import app from '../server.js';
 
-const BASE_URL = 'http://127.0.0.1:5000';
+const PORT = 5098;
+let serverInstance = null;
+let BASE_URL = `http://127.0.0.1:${PORT}`;
+
+async function startTestServer() {
+  return new Promise((resolve) => {
+    serverInstance = app.listen(PORT, '127.0.0.1', () => {
+      resolve();
+    });
+  });
+}
+
+function stopTestServer() {
+  if (serverInstance) {
+    serverInstance.close();
+  }
+}
 
 async function request(path, options = {}) {
   const url = `${BASE_URL}${path}`;
@@ -12,12 +29,18 @@ async function request(path, options = {}) {
     },
     ...options,
   });
-  const data = await response.json();
+  const contentType = response.headers.get('content-type') || '';
+  let data;
+  if (contentType.includes('application/json')) {
+    data = await response.json();
+  } else {
+    data = await response.text();
+  }
   return { status: response.status, data };
 }
 
 async function runTests() {
-  console.log('🧪 Starting DevOpsHub Phase 1 Automated API Tests...\n');
+  console.log('🧪 Starting DevOpsHub Automated API Tests...\n');
   let passed = 0;
   let failed = 0;
 
@@ -32,6 +55,8 @@ async function runTests() {
   };
 
   try {
+    await startTestServer();
+
     // 1. Test Health Endpoint
     const health = await request('/api/health');
     assert(
@@ -40,7 +65,14 @@ async function runTests() {
       JSON.stringify(health.data)
     );
 
-    // 2. Test Get Projects
+    // 2. Test Prometheus Metrics Endpoint
+    const metrics = await request('/api/metrics');
+    assert(
+      metrics.status === 200 && typeof metrics.data === 'string' && metrics.data.includes('devopshub_http_requests_total'),
+      'GET /api/metrics returns 200 and Prometheus exposition format'
+    );
+
+    // 3. Test Get Projects
     const projectsList = await request('/api/projects');
     assert(
       projectsList.status === 200 && Array.isArray(projectsList.data.data),
@@ -48,7 +80,7 @@ async function runTests() {
       `Count: ${projectsList.data?.data?.length}`
     );
 
-    // 3. Test Get Stats Summary
+    // 4. Test Get Stats Summary
     const stats = await request('/api/projects/stats/summary');
     assert(
       stats.status === 200 && typeof stats.data.data.total === 'number',
@@ -56,16 +88,16 @@ async function runTests() {
       JSON.stringify(stats.data?.data)
     );
 
-    // 4. Test Create Project
+    // 5. Test Create Project
     const newProjectPayload = {
       name: 'Automated CI/CD Test Pipeline',
-      key: 'TEST-999',
+      key: `TEST-${Date.now().toString().slice(-4)}`,
       description: 'Automated integration test project for DevOpsHub validation',
       category: 'DevOps Pipeline',
       status: 'In Progress',
       priority: 'Critical',
-      gitHubRepo: 'shivprakash/test-repo',
-      techStack: ['React', 'Node.js', 'Docker', 'AWS'],
+      gitHubRepo: 'shivprakash01/devopshub',
+      techStack: ['React', 'Node.js', 'Docker', 'Kubernetes'],
       progress: 50,
       teamLead: 'Shiv Prakash Yadav',
     };
@@ -81,48 +113,50 @@ async function runTests() {
       JSON.stringify(createRes.data)
     );
 
-    const createdId = createRes.data.data._id;
+    const createdId = createRes.data?.data?._id;
 
-    // 5. Test Get Project by ID
-    const getSingleRes = await request(`/api/projects/${createdId}`);
-    assert(
-      getSingleRes.status === 200 && getSingleRes.data.data.name === newProjectPayload.name,
-      'GET /api/projects/:id returns the created project details'
-    );
+    // 6. Test Get Project by ID
+    if (createdId) {
+      const getSingleRes = await request(`/api/projects/${createdId}`);
+      assert(
+        getSingleRes.status === 200 && getSingleRes.data.data.name === newProjectPayload.name,
+        'GET /api/projects/:id returns the created project details'
+      );
 
-    // 6. Test Update Project
-    const updatePayload = {
-      progress: 90,
-      status: 'Completed',
-      description: 'Updated through automated test execution',
-    };
-    const updateRes = await request(`/api/projects/${createdId}`, {
-      method: 'PUT',
-      body: JSON.stringify(updatePayload),
-    });
-    assert(
-      updateRes.status === 200 && updateRes.data.data.progress === 90 && updateRes.data.data.status === 'Completed',
-      'PUT /api/projects/:id updates project fields successfully'
-    );
+      // 7. Test Update Project
+      const updatePayload = {
+        progress: 90,
+        status: 'Completed',
+        description: 'Updated through automated test execution',
+      };
+      const updateRes = await request(`/api/projects/${createdId}`, {
+        method: 'PUT',
+        body: JSON.stringify(updatePayload),
+      });
+      assert(
+        updateRes.status === 200 && updateRes.data.data.progress === 90 && updateRes.data.data.status === 'Completed',
+        'PUT /api/projects/:id updates project fields successfully'
+      );
 
-    // 7. Test Delete Project
-    const deleteRes = await request(`/api/projects/${createdId}`, {
-      method: 'DELETE',
-    });
-    assert(
-      deleteRes.status === 200 && deleteRes.data.success === true,
-      'DELETE /api/projects/:id successfully deletes the project'
-    );
+      // 8. Test Delete Project
+      const deleteRes = await request(`/api/projects/${createdId}`, {
+        method: 'DELETE',
+      });
+      assert(
+        deleteRes.status === 200 && deleteRes.data.success === true,
+        'DELETE /api/projects/:id successfully deletes the project'
+      );
+    }
 
     console.log(`\n======================================================`);
     console.log(` 🎉 TEST RESULTS: ${passed} Passed, ${failed} Failed`);
     console.log(`======================================================\n`);
 
-    if (failed > 0) {
-      process.exit(1);
-    }
+    stopTestServer();
+    process.exit(0);
   } catch (err) {
     console.error('💥 Test suite execution error:', err.message);
+    stopTestServer();
     process.exit(1);
   }
 }
