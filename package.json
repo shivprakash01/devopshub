@@ -1,0 +1,40 @@
+{
+  "name": "devopshub-root",
+  "version": "1.0.0",
+  "description": "DevOpsHub - Cloud-Based Project Management & Automated CI/CD Platform",
+  "scripts": {
+    "server": "npm run dev --prefix server",
+    "client": "npm run dev --prefix client",
+    "dev": "concurrently \"npm run server\" \"npm run client\"",
+    "install:all": "npm install && npm install --prefix server && npm install --prefix client",
+    "build:client": "npm run build --prefix client",
+    "test:server": "node server/src/tests/api.test.js",
+    "docker:build": "docker compose build",
+    "docker:up": "docker compose up -d",
+    "docker:down": "docker compose down",
+    "docker:logs": "docker compose logs -f",
+    "docker:push": "docker push shivayadav70/devopshub-server:latest && docker push shivayadav70/devopshub-client:latest",
+    "docker:build:push": "npm run docker:build && npm run docker:push"
+  },
+  "keywords": [
+    "devops",
+    "mern",
+    "cloud-native",
+    "ci-cd",
+    "kubernetes",
+    "docker"
+  ],
+  "author": "Shiv Prakash Yadav (https://github.com/shivprakash01)",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/shivprakash01/devopshub.git"
+  },
+  "bugs": {
+    "url": "https://github.com/shivprakash01/devopshub/issues"
+  },
+  "homepage": "https://github.com/shivprakash01/devopshub#readme",
+  "license": "ISC",
+  "devDependencies": {
+    "concurrently": "^8.2.2"
+  }
+}
