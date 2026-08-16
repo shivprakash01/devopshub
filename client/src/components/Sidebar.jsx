@@ -12,12 +12,12 @@ import {
 
 export default function Sidebar({ activeTab, onTabChange }) {
   const menuItems = [
-    { id: 'projects', label: 'Projects & Workspaces', icon: LayoutDashboard, phase: 'Phase 1' },
-    { id: 'tasks', label: 'Tasks & Boards', icon: CheckSquare, phase: 'Phase 3' },
-    { id: 'github', label: 'GitHub Integrations', icon: GitBranch, phase: 'Phase 4' },
-    { id: 'cicd', label: 'CI/CD Pipelines', icon: PlayCircle, phase: 'Phase 6' },
-    { id: 'cloud', label: 'AWS & Kubernetes', icon: Cloud, phase: 'Phase 7-8' },
-    { id: 'monitoring', label: 'Observability & Logs', icon: Activity, phase: 'Phase 9' },
+    { id: 'projects', label: 'Projects & Workspaces', icon: LayoutDashboard, phase: 'Live' },
+    { id: 'tasks', label: 'Tasks & Boards', icon: CheckSquare, phase: 'v1.0' },
+    { id: 'github', label: 'GitHub Integrations', icon: GitBranch, phase: 'Active' },
+    { id: 'cicd', label: 'CI/CD Pipelines', icon: PlayCircle, phase: 'Live' },
+    { id: 'cloud', label: 'AWS & Kubernetes', icon: Cloud, phase: 'K8s' },
+    { id: 'monitoring', label: 'Observability & Logs', icon: Activity, phase: 'Metrics' },
   ];
 
   return (
